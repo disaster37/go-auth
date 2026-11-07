@@ -127,11 +127,14 @@ func (s *Service) identityForUser(ctx context.Context, userID string, method dom
 		s.logger.Debug("resolved user missing", map[string]any{"user_id": userID})
 		return nil, domain.ErrUnauthenticated
 	}
-	if method == domain.AuthMethodJWT && u.TokenVersion != tokenVersion {
-		s.logger.Debug("stale jwt token version; session revoked", map[string]any{"user_id": u.ID})
+	// TokenVersion and AuthEpoch are revocation counters carried by JWT and
+	// session tokens. API tokens are revoked independently (Revoke/Delete) and
+	// must not be invalidated by a global AuthEpoch bump.
+	if (method == domain.AuthMethodJWT || method == domain.AuthMethodSession) && u.TokenVersion != tokenVersion {
+		s.logger.Debug("stale token version; session revoked", map[string]any{"user_id": u.ID})
 		return nil, domain.ErrSessionRevoked
 	}
-	if s.epochs != nil {
+	if (method == domain.AuthMethodJWT || method == domain.AuthMethodSession) && s.epochs != nil {
 		current, err := s.epochs.GetAuthEpoch(ctx)
 		if err == nil && current != authEpoch {
 			s.logger.Debug("stale auth epoch; session revoked", map[string]any{"user_id": u.ID})
@@ -178,7 +181,10 @@ func (s *Service) Login(ctx context.Context, username, rawPassword string) (acce
 		s.logger.Debug("login failed", map[string]any{"username": username})
 		return "", "", nil, err
 	}
-	gids, _ := s.groups.GroupsForUser(ctx, u.ID)
+	var gids []*domain.Group
+	if s.groups != nil {
+		gids, _ = s.groups.GroupsForUser(ctx, u.ID)
+	}
 	access, refresh, err = s.jwt.IssuePair(u, groupIDs(gids), s.currentEpoch(ctx))
 	if err != nil {
 		return "", "", nil, err

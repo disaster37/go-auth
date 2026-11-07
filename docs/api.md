@@ -154,7 +154,7 @@ func NewService(cfg ServiceConfig) *Service
 NewService returns a Service.
 
 <a name="Service.Login"></a>
-### func \(\*Service\) [Login](<https://github.com/disaster37/go-auth/blob/main/auth.go#L175>)
+### func \(\*Service\) [Login](<https://github.com/disaster37/go-auth/blob/main/auth.go#L178>)
 
 ```go
 func (s *Service) Login(ctx context.Context, username, rawPassword string) (access, refresh string, u *domain.User, err error)
@@ -163,7 +163,7 @@ func (s *Service) Login(ctx context.Context, username, rawPassword string) (acce
 Login authenticates a user and issues a fresh JWT pair.
 
 <a name="Service.Logout"></a>
-### func \(\*Service\) [Logout](<https://github.com/disaster37/go-auth/blob/main/auth.go#L222>)
+### func \(\*Service\) [Logout](<https://github.com/disaster37/go-auth/blob/main/auth.go#L228>)
 
 ```go
 func (s *Service) Logout(ctx context.Context, bearer string) error
@@ -172,7 +172,7 @@ func (s *Service) Logout(ctx context.Context, bearer string) error
 Logout revokes every JWT issued before the call by bumping the user's TokenVersion.
 
 <a name="Service.Refresh"></a>
-### func \(\*Service\) [Refresh](<https://github.com/disaster37/go-auth/blob/main/auth.go#L192>)
+### func \(\*Service\) [Refresh](<https://github.com/disaster37/go-auth/blob/main/auth.go#L198>)
 
 ```go
 func (s *Service) Refresh(ctx context.Context, refreshToken string) (access, refresh string, err error)
@@ -1666,7 +1666,7 @@ func GeneratePKCEVerifier() (string, error)
 GeneratePKCEVerifier returns a 32\-byte CSPRNG PKCE code\_verifier \(RFC 7636\).
 
 <a name="NewOAuthHTTPClient"></a>
-## func [NewOAuthHTTPClient](<https://github.com/disaster37/go-auth/blob/main/oauth/oidc.go#L545>)
+## func [NewOAuthHTTPClient](<https://github.com/disaster37/go-auth/blob/main/oauth/oidc.go#L552>)
 
 ```go
 func NewOAuthHTTPClient(caCertPath string, timeout time.Duration) (*http.Client, error)
@@ -1733,7 +1733,7 @@ func OpenCredential(sealer crypto.Sealer, ciphertext string) (*Credential, error
 OpenCredential reverses SealCredential. It returns \(nil, nil\) when ciphertext is empty.
 
 <a name="GitHubConfig"></a>
-## type [GitHubConfig](<https://github.com/disaster37/go-auth/blob/main/oauth/github.go#L23-L34>)
+## type [GitHubConfig](<https://github.com/disaster37/go-auth/blob/main/oauth/github.go#L23-L38>)
 
 GitHubConfig configures a GitHubOAuthService.
 
@@ -1749,11 +1749,15 @@ type GitHubConfig struct {
     TokenURL     string
     APIBaseURL   string
     EnablePKCE   bool
+    // AuthEpoch optionally supplies the current cluster-wide AuthEpoch so that
+    // OAuth-issued JWTs carry the same global revocation counter as the rest of
+    // the system. When nil, tokens are issued with epoch 0.
+    AuthEpoch func() int64
 }
 ```
 
 <a name="GitHubOAuthService"></a>
-## type [GitHubOAuthService](<https://github.com/disaster37/go-auth/blob/main/oauth/github.go#L38-L44>)
+## type [GitHubOAuthService](<https://github.com/disaster37/go-auth/blob/main/oauth/github.go#L42-L48>)
 
 GitHubOAuthService implements the GitHub OAuth login flow \(server\-side code exchange\).
 
@@ -1764,7 +1768,7 @@ type GitHubOAuthService struct {
 ```
 
 <a name="NewGitHubOAuthService"></a>
-### func [NewGitHubOAuthService](<https://github.com/disaster37/go-auth/blob/main/oauth/github.go#L47-L57>)
+### func [NewGitHubOAuthService](<https://github.com/disaster37/go-auth/blob/main/oauth/github.go#L51-L61>)
 
 ```go
 func NewGitHubOAuthService(cfg GitHubConfig, mapper *GroupMapper, users *password.Service, userStore store.UserStore, groups store.GroupStore, jwtSvc *jwt.Service, sealer crypto.Sealer, httpClient *http.Client, logger observ.Logger) *GitHubOAuthService
@@ -1773,7 +1777,7 @@ func NewGitHubOAuthService(cfg GitHubConfig, mapper *GroupMapper, users *passwor
 NewGitHubOAuthService returns a GitHubOAuthService.
 
 <a name="GitHubOAuthService.Complete"></a>
-### func \(\*GitHubOAuthService\) [Complete](<https://github.com/disaster37/go-auth/blob/main/oauth/github.go#L109>)
+### func \(\*GitHubOAuthService\) [Complete](<https://github.com/disaster37/go-auth/blob/main/oauth/github.go#L114>)
 
 ```go
 func (s *GitHubOAuthService) Complete(ctx context.Context, params CompleteParams) (access, refresh string, u *domain.User, err error)
@@ -1782,7 +1786,7 @@ func (s *GitHubOAuthService) Complete(ctx context.Context, params CompleteParams
 Complete exchanges the code for a GitHub access token, fetches the user profile, orgs and \(when needed\) teams, enforces the allowlist, resolves the local user, and issues a JWT pair.
 
 <a name="GitHubOAuthService.LoginURL"></a>
-### func \(\*GitHubOAuthService\) [LoginURL](<https://github.com/disaster37/go-auth/blob/main/oauth/github.go#L93>)
+### func \(\*GitHubOAuthService\) [LoginURL](<https://github.com/disaster37/go-auth/blob/main/oauth/github.go#L98>)
 
 ```go
 func (s *GitHubOAuthService) LoginURL(params AuthorizeParams) string
@@ -1791,7 +1795,7 @@ func (s *GitHubOAuthService) LoginURL(params AuthorizeParams) string
 LoginURL returns the GitHub authorize URL with the given state token.
 
 <a name="GitHubOAuthService.Name"></a>
-### func \(\*GitHubOAuthService\) [Name](<https://github.com/disaster37/go-auth/blob/main/oauth/github.go#L90>)
+### func \(\*GitHubOAuthService\) [Name](<https://github.com/disaster37/go-auth/blob/main/oauth/github.go#L95>)
 
 ```go
 func (s *GitHubOAuthService) Name() string
@@ -1800,7 +1804,7 @@ func (s *GitHubOAuthService) Name() string
 Name returns the provider ID.
 
 <a name="GitHubOAuthService.Revalidate"></a>
-### func \(\*GitHubOAuthService\) [Revalidate](<https://github.com/disaster37/go-auth/blob/main/oauth/github.go#L290>)
+### func \(\*GitHubOAuthService\) [Revalidate](<https://github.com/disaster37/go-auth/blob/main/oauth/github.go#L295>)
 
 ```go
 func (s *GitHubOAuthService) Revalidate(ctx context.Context, u *domain.User) ([]string, error)
@@ -1868,7 +1872,7 @@ type GroupMappingRule struct {
 ```
 
 <a name="OIDCConfig"></a>
-## type [OIDCConfig](<https://github.com/disaster37/go-auth/blob/main/oauth/oidc.go#L30-L50>)
+## type [OIDCConfig](<https://github.com/disaster37/go-auth/blob/main/oauth/oidc.go#L30-L54>)
 
 OIDCConfig configures an OIDCOAuthService.
 
@@ -1893,11 +1897,15 @@ type OIDCConfig struct {
     RequireNonce         bool
     EnablePKCE           bool
     AutoCreateUser       bool
+    // AuthEpoch optionally supplies the current cluster-wide AuthEpoch so that
+    // OAuth-issued JWTs carry the same global revocation counter as the rest of
+    // the system. When nil, tokens are issued with epoch 0.
+    AuthEpoch func() int64
 }
 ```
 
 <a name="OIDCOAuthService"></a>
-## type [OIDCOAuthService](<https://github.com/disaster37/go-auth/blob/main/oauth/oidc.go#L53-L68>)
+## type [OIDCOAuthService](<https://github.com/disaster37/go-auth/blob/main/oauth/oidc.go#L57-L72>)
 
 OIDCOAuthService implements the generic OIDC authorization\-code login flow.
 
@@ -1908,7 +1916,7 @@ type OIDCOAuthService struct {
 ```
 
 <a name="NewOIDCOAuthService"></a>
-### func [NewOIDCOAuthService](<https://github.com/disaster37/go-auth/blob/main/oauth/oidc.go#L74-L85>)
+### func [NewOIDCOAuthService](<https://github.com/disaster37/go-auth/blob/main/oauth/oidc.go#L78-L89>)
 
 ```go
 func NewOIDCOAuthService(cfg OIDCConfig, mapper *GroupMapper, users *password.Service, userStore store.UserStore, groups store.GroupStore, jwtSvc *jwt.Service, sealer crypto.Sealer, httpClient *http.Client, isLeader func() bool, logger observ.Logger) (*OIDCOAuthService, error)
@@ -1917,7 +1925,7 @@ func NewOIDCOAuthService(cfg OIDCConfig, mapper *GroupMapper, users *password.Se
 NewOIDCOAuthService returns an OIDCOAuthService. The issuer URL is trailing\-slash\-normalized; "openid" and "offline\_access" are appended to scopes when missing; empty claim names fall back to preferred\_username/groups.
 
 <a name="OIDCOAuthService.Complete"></a>
-### func \(\*OIDCOAuthService\) [Complete](<https://github.com/disaster37/go-auth/blob/main/oauth/oidc.go#L279>)
+### func \(\*OIDCOAuthService\) [Complete](<https://github.com/disaster37/go-auth/blob/main/oauth/oidc.go#L284>)
 
 ```go
 func (s *OIDCOAuthService) Complete(ctx context.Context, params CompleteParams) (access, refresh string, u *domain.User, err error)
@@ -1926,7 +1934,7 @@ func (s *OIDCOAuthService) Complete(ctx context.Context, params CompleteParams) 
 Complete exchanges the code for tokens, verifies the ID token, extracts the sub/username/groups claims, enforces the allowlist, resolves the local user, and issues a JWT pair.
 
 <a name="OIDCOAuthService.LoginURL"></a>
-### func \(\*OIDCOAuthService\) [LoginURL](<https://github.com/disaster37/go-auth/blob/main/oauth/oidc.go#L259>)
+### func \(\*OIDCOAuthService\) [LoginURL](<https://github.com/disaster37/go-auth/blob/main/oauth/oidc.go#L264>)
 
 ```go
 func (s *OIDCOAuthService) LoginURL(params AuthorizeParams) string
@@ -1935,7 +1943,7 @@ func (s *OIDCOAuthService) LoginURL(params AuthorizeParams) string
 LoginURL returns the OIDC authorize URL. Discovery is bounded by DefaultDiscoveryTimeout; a discovery failure yields an empty URL.
 
 <a name="OIDCOAuthService.Name"></a>
-### func \(\*OIDCOAuthService\) [Name](<https://github.com/disaster37/go-auth/blob/main/oauth/oidc.go#L129>)
+### func \(\*OIDCOAuthService\) [Name](<https://github.com/disaster37/go-auth/blob/main/oauth/oidc.go#L134>)
 
 ```go
 func (s *OIDCOAuthService) Name() string
@@ -1944,7 +1952,7 @@ func (s *OIDCOAuthService) Name() string
 Name returns the provider ID.
 
 <a name="OIDCOAuthService.Revalidate"></a>
-### func \(\*OIDCOAuthService\) [Revalidate](<https://github.com/disaster37/go-auth/blob/main/oauth/oidc.go#L430>)
+### func \(\*OIDCOAuthService\) [Revalidate](<https://github.com/disaster37/go-auth/blob/main/oauth/oidc.go#L437>)
 
 ```go
 func (s *OIDCOAuthService) Revalidate(ctx context.Context, u *domain.User) ([]string, error)
@@ -2755,7 +2763,7 @@ func (l *LockoutLimiter) RecordFailure(key string) time.Duration
 RecordFailure records a failed attempt and returns the lockout duration it triggered \(0 when the failure did not yet cause a lockout\).
 
 <a name="LockoutLimiter.RecordSuccess"></a>
-### func \(\*LockoutLimiter\) [RecordSuccess](<https://github.com/disaster37/go-auth/blob/main/secguard/lockout.go#L137>)
+### func \(\*LockoutLimiter\) [RecordSuccess](<https://github.com/disaster37/go-auth/blob/main/secguard/lockout.go#L142>)
 
 ```go
 func (l *LockoutLimiter) RecordSuccess(key string)
@@ -3294,7 +3302,7 @@ func (c *FakeClock) Now() time.Time
 Now returns the current fake time.
 
 <a name="MockOIDCServer"></a>
-## type [MockOIDCServer](<https://github.com/disaster37/go-auth/blob/main/testutil/oidcserver.go#L22-L55>)
+## type [MockOIDCServer](<https://github.com/disaster37/go-auth/blob/main/testutil/oidcserver.go#L22-L56>)
 
 MockOIDCServer is an in\-process OIDC provider signing RS256 ID tokens with a generated RSA key and serving discovery, JWKS, token, and userinfo endpoints.
 
@@ -3314,13 +3322,14 @@ type MockOIDCServer struct {
     AZP           string
 
     // Behavior overrides.
-    TokenStatus      int
-    UserinfoStatus   int
-    UserinfoFailOnce bool
-    OversizedBody    bool
-    OmitIDToken      bool
-    AccessToken      string
-    RefreshToken     string
+    TokenStatus       int
+    UserinfoStatus    int
+    UserinfoFailOnce  bool
+    OversizedBody     bool
+    OmitIDToken       bool
+    OmitEmailVerified bool
+    AccessToken       string
+    RefreshToken      string
 
     // ExtraUserinfoClaims are merged into the userinfo response only.
     ExtraUserinfoClaims map[string]any
@@ -3333,7 +3342,7 @@ type MockOIDCServer struct {
 ```
 
 <a name="NewMockOIDCServer"></a>
-### func [NewMockOIDCServer](<https://github.com/disaster37/go-auth/blob/main/testutil/oidcserver.go#L59>)
+### func [NewMockOIDCServer](<https://github.com/disaster37/go-auth/blob/main/testutil/oidcserver.go#L60>)
 
 ```go
 func NewMockOIDCServer(t testing.TB) *MockOIDCServer
@@ -3342,7 +3351,7 @@ func NewMockOIDCServer(t testing.TB) *MockOIDCServer
 NewMockOIDCServer starts a mock OIDC provider and registers its shutdown with t.Cleanup.
 
 <a name="MockOIDCServer.IDToken"></a>
-### func \(\*MockOIDCServer\) [IDToken](<https://github.com/disaster37/go-auth/blob/main/testutil/oidcserver.go#L91>)
+### func \(\*MockOIDCServer\) [IDToken](<https://github.com/disaster37/go-auth/blob/main/testutil/oidcserver.go#L92>)
 
 ```go
 func (m *MockOIDCServer) IDToken() (string, error)
@@ -3351,7 +3360,7 @@ func (m *MockOIDCServer) IDToken() (string, error)
 IDToken returns a signed RS256 ID token reflecting the current claims.
 
 <a name="MockOIDCServer.Issuer"></a>
-### func \(\*MockOIDCServer\) [Issuer](<https://github.com/disaster37/go-auth/blob/main/testutil/oidcserver.go#L88>)
+### func \(\*MockOIDCServer\) [Issuer](<https://github.com/disaster37/go-auth/blob/main/testutil/oidcserver.go#L89>)
 
 ```go
 func (m *MockOIDCServer) Issuer() string

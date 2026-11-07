@@ -31,6 +31,10 @@ type GitHubConfig struct {
 	TokenURL     string
 	APIBaseURL   string
 	EnablePKCE   bool
+	// AuthEpoch optionally supplies the current cluster-wide AuthEpoch so that
+	// OAuth-issued JWTs carry the same global revocation counter as the rest of
+	// the system. When nil, tokens are issued with epoch 0.
+	AuthEpoch func() int64
 }
 
 // GitHubOAuthService implements the GitHub OAuth login flow (server-side code
@@ -80,6 +84,7 @@ func NewGitHubOAuthService(
 			adminGroups:  cfg.AdminGroups,
 			defaultGroup: cfg.DefaultGroup,
 			autoCreate:   true,
+			epoch:        cfg.AuthEpoch,
 		},
 		http:   httpClient,
 		logger: logger,

@@ -398,3 +398,59 @@ func TestCurrentEpochError(t *testing.T) {
 		t.Fatalf("resolve with failing epoch store: %v", err)
 	}
 }
+
+func TestResolveSessionStaleTokenVersion(t *testing.T) {
+	ctx := context.Background()
+	env := newTestEnv(t, nil)
+	u, _ := env.passSvc.CreateUser(ctx, "alice", "password123", domain.RoleUser)
+	key, _ := jwt.DeriveSigningKey("secret", "")
+	tok := &jwt.SessionToken{UserID: u.ID, Username: "alice", Method: "internal", ExpiresAt: time.Now().Add(time.Hour).Unix(), TokenVersion: 0}
+	encoded, _ := jwt.EncodeSession(tok, key)
+	if err := env.passSvc.IncrementTokenVersion(ctx, u.ID); err != nil {
+		t.Fatalf("increment: %v", err)
+	}
+	if _, err := env.svc.ResolveSession(ctx, encoded, key); !errors.Is(err, domain.ErrSessionRevoked) {
+		t.Fatalf("stale session token version: %v", err)
+	}
+}
+
+func TestResolveAPITokenAfterEpochBump(t *testing.T) {
+	ctx := context.Background()
+	env := newTestEnv(t, nil)
+	u, _ := env.passSvc.CreateUser(ctx, "alice", "password123", domain.RoleUser)
+	plaintext, _, err := env.svc.tokens.Generate(ctx, u.ID)
+	if err != nil {
+		t.Fatalf("generate token: %v", err)
+	}
+	if _, err := env.epochs.BumpAuthEpoch(ctx); err != nil {
+		t.Fatalf("bump: %v", err)
+	}
+	id, err := env.svc.Resolve(ctx, plaintext)
+	if err != nil || id.UserID != u.ID || id.Method != domain.AuthMethodAPIToken {
+		t.Fatalf("api token after epoch bump: %+v %v", id, err)
+	}
+}
+
+func TestLoginWithoutGroups(t *testing.T) {
+	ctx := context.Background()
+	users := store.NewMemoryUserStore()
+	jwtSvc, err := jwt.NewService(jwt.Config{Secret: []byte("0123456789abcdef0123456789abcdef")})
+	if err != nil {
+		t.Fatalf("jwt: %v", err)
+	}
+	passSvc := password.NewService(users)
+	svc := NewService(ServiceConfig{
+		Users:     passSvc,
+		UserStore: users,
+		JWT:       jwtSvc,
+		Logger:    observ.NewNoopLogger(),
+	})
+	u, err := passSvc.CreateUser(ctx, "alice", "password123", domain.RoleUser)
+	if err != nil {
+		t.Fatalf("create: %v", err)
+	}
+	access, refresh, got, err := svc.Login(ctx, "alice", "password123")
+	if err != nil || got.ID != u.ID || access == "" || refresh == "" {
+		t.Fatalf("login without groups: %v", err)
+	}
+}

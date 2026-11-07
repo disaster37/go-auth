@@ -47,6 +47,10 @@ type OIDCConfig struct {
 	RequireNonce         bool
 	EnablePKCE           bool
 	AutoCreateUser       bool
+	// AuthEpoch optionally supplies the current cluster-wide AuthEpoch so that
+	// OAuth-issued JWTs carry the same global revocation counter as the rest of
+	// the system. When nil, tokens are issued with epoch 0.
+	AuthEpoch func() int64
 }
 
 // OIDCOAuthService implements the generic OIDC authorization-code login flow.
@@ -117,6 +121,7 @@ func NewOIDCOAuthService(
 			adminGroups:  cfg.AdminGroups,
 			defaultGroup: cfg.DefaultGroup,
 			autoCreate:   cfg.AutoCreateUser,
+			epoch:        cfg.AuthEpoch,
 		},
 		sealer:     sealer,
 		httpClient: httpClient,
@@ -327,14 +332,16 @@ func (s *OIDCOAuthService) Complete(ctx context.Context, params CompleteParams) 
 		}
 	}
 
+	if claimMissing(claims, s.usernameClaim) || claimMissing(claims, "email") || claimMissing(claims, s.groupsClaim) {
+		s.mergeUserInfo(ctx, p, tok, claims)
+	}
+
+	// Enforce email_verified AFTER the userinfo merge so a false value supplied
+	// only by userinfo (when the ID token omits the claim) is not bypassed.
 	if s.cfg.RequireEmailVerified {
 		if v, ok := claims["email_verified"].(bool); ok && !v {
 			return "", "", nil, fmt.Errorf("oidc: email not verified: %w", domain.ErrForbidden)
 		}
-	}
-
-	if claimMissing(claims, s.usernameClaim) || claimMissing(claims, "email") || claimMissing(claims, s.groupsClaim) {
-		s.mergeUserInfo(ctx, p, tok, claims)
 	}
 
 	username, err := s.resolveUsername(claims)
@@ -572,7 +579,7 @@ func NewOAuthHTTPClient(caCertPath string, timeout time.Duration) (*http.Client,
 }
 
 func refuseCrossOriginRedirect(req *http.Request, via []*http.Request) error {
-	if len(via) > 0 && req.URL.Host != via[0].URL.Host {
+	if len(via) > 0 && (req.URL.Scheme != via[0].URL.Scheme || req.URL.Host != via[0].URL.Host) {
 		return fmt.Errorf("cross-origin redirect refused: %s", req.URL.Host)
 	}
 	return nil

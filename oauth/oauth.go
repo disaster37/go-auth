@@ -157,6 +157,7 @@ type loginContext struct {
 	adminGroups  []string
 	defaultGroup string
 	autoCreate   bool
+	epoch        func() int64
 }
 
 // completeOAuthLogin is the shared post-verification tail for both OAuth
@@ -209,8 +210,17 @@ func completeOAuthLogin(
 		return "", "", nil, fmt.Errorf("persist oauth user: %w", err)
 	}
 
-	access, refresh, err = lc.jwt.IssuePair(u, groupIDs(memberGroups), 0)
+	access, refresh, err = lc.jwt.IssuePair(u, groupIDs(memberGroups), currentEpoch(lc.epoch))
 	return access, refresh, u, err
+}
+
+// currentEpoch returns the current AuthEpoch via the optional provider, or 0
+// when none is configured.
+func currentEpoch(epoch func() int64) int64 {
+	if epoch == nil {
+		return 0
+	}
+	return epoch()
 }
 
 func resolveOAuthUser(ctx context.Context, lc loginContext, provider, oauthID, issuer, username string) (*domain.User, error) {

@@ -125,7 +125,12 @@ func (l *LockoutLimiter) RecordFailure(key string) time.Duration {
 	if shift > MaxLockoutShift {
 		shift = MaxLockoutShift
 	}
-	lock := l.cfg.BaseLockout << shift
+	// Double iteratively and clamp to MaxLockout so the duration computation can
+	// never overflow int64 even for large configured BaseLockout values.
+	lock := l.cfg.BaseLockout
+	for i := 0; i < shift && lock < l.cfg.MaxLockout; i++ {
+		lock *= 2
+	}
 	if lock > l.cfg.MaxLockout {
 		lock = l.cfg.MaxLockout
 	}

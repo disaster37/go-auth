@@ -116,3 +116,21 @@ func TestLockoutDefaults(t *testing.T) {
 		t.Fatalf("defaults not applied: %+v", l.cfg)
 	}
 }
+
+func TestLockoutNoOverflow(t *testing.T) {
+	clk := &fakeClock{now: time.Unix(0, 0)}
+	// A large BaseLockout combined with many failures must clamp to MaxLockout
+	// rather than overflowing int64 (which would silently disable the lockout).
+	l := NewLockoutLimiter(LockoutConfig{Clock: clk.Now, MaxFailedAttempts: 1, BaseLockout: 7 * 24 * time.Hour, MaxLockout: 15 * time.Minute})
+	key := "k"
+	var last time.Duration
+	for i := 0; i < 20; i++ {
+		last = l.RecordFailure(key)
+	}
+	if last != 15*time.Minute {
+		t.Fatalf("lockout=%v want 15m", last)
+	}
+	if l.Allow(key) {
+		t.Fatal("key must remain locked")
+	}
+}

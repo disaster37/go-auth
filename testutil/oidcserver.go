@@ -38,13 +38,14 @@ type MockOIDCServer struct {
 	AZP           string
 
 	// Behavior overrides.
-	TokenStatus      int
-	UserinfoStatus   int
-	UserinfoFailOnce bool
-	OversizedBody    bool
-	OmitIDToken      bool
-	AccessToken      string
-	RefreshToken     string
+	TokenStatus       int
+	UserinfoStatus    int
+	UserinfoFailOnce  bool
+	OversizedBody     bool
+	OmitIDToken       bool
+	OmitEmailVerified bool
+	AccessToken       string
+	RefreshToken      string
 
 	// ExtraUserinfoClaims are merged into the userinfo response only.
 	ExtraUserinfoClaims map[string]any
@@ -100,8 +101,10 @@ func (m *MockOIDCServer) IDToken() (string, error) {
 		"iat":                now.Unix(),
 		"preferred_username": m.Username,
 		"email":              m.Email,
-		"email_verified":     m.EmailVerified,
 		"groups":             m.Groups,
+	}
+	if !m.OmitEmailVerified {
+		claims["email_verified"] = m.EmailVerified
 	}
 	if m.Nonce != "" {
 		claims["nonce"] = m.Nonce

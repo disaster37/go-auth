@@ -3,6 +3,7 @@ package oauth
 import (
 	"context"
 	"errors"
+	"net/http"
 	"strings"
 	"testing"
 
@@ -114,6 +115,46 @@ func TestOIDCCompleteEmailVerified(t *testing.T) {
 	svc, _, _ := newOIDCService(t, m, OIDCConfig{RequireEmailVerified: true})
 	if _, _, _, err := svc.Complete(context.Background(), CompleteParams{Code: "code"}); !errors.Is(err, domain.ErrForbidden) {
 		t.Fatalf("unverified email: %v", err)
+	}
+}
+
+func TestOIDCCompleteEmailVerifiedFromUserinfo(t *testing.T) {
+	m := testutil.NewMockOIDCServer(t)
+	// The ID token omits email_verified; userinfo supplies false. The check must
+	// run after the userinfo merge so this is not bypassed.
+	m.OmitEmailVerified = true
+	m.EmailVerified = false
+	svc, _, _ := newOIDCService(t, m, OIDCConfig{RequireEmailVerified: true, UsernameClaim: "nickname"})
+	if _, _, _, err := svc.Complete(context.Background(), CompleteParams{Code: "code"}); !errors.Is(err, domain.ErrForbidden) {
+		t.Fatalf("unverified email from userinfo: %v", err)
+	}
+}
+
+func TestOIDCCompleteAuthEpoch(t *testing.T) {
+	m := testutil.NewMockOIDCServer(t)
+	svc, _, _ := newOIDCService(t, m, OIDCConfig{AuthEpoch: func() int64 { return 7 }})
+	access, _, _, err := svc.Complete(context.Background(), CompleteParams{Code: "code"})
+	if err != nil {
+		t.Fatalf("complete: %v", err)
+	}
+	claims, err := svc.lc.jwt.ParseAccess(access)
+	if err != nil {
+		t.Fatalf("parse access: %v", err)
+	}
+	if claims.AuthEpoch != 7 {
+		t.Fatalf("auth epoch=%d want 7", claims.AuthEpoch)
+	}
+}
+
+func TestRefuseCrossOriginRedirectSchemeDowngrade(t *testing.T) {
+	orig, _ := http.NewRequest(http.MethodGet, "https://idp.example.com/token", nil)
+	next, _ := http.NewRequest(http.MethodGet, "http://idp.example.com/token", nil)
+	if err := refuseCrossOriginRedirect(next, []*http.Request{orig}); err == nil {
+		t.Fatal("scheme downgrade redirect must be refused")
+	}
+	same, _ := http.NewRequest(http.MethodGet, "https://idp.example.com/other", nil)
+	if err := refuseCrossOriginRedirect(same, []*http.Request{orig}); err != nil {
+		t.Fatalf("same-origin redirect must be allowed: %v", err)
 	}
 }
 
