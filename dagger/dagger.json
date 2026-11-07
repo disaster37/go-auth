@@ -1,0 +1,14 @@
+{
+  "name": "go-auth",
+  "engineVersion": "v0.21.10",
+  "sdk": {
+    "source": "go"
+  },
+  "dependencies": [
+    {
+      "name": "golang",
+      "source": "github.com/disaster37/dagger-library-go/golang@2.0.12",
+      "pin": "69b57f8ff6f970a8e28480741f14c58ae4aac014"
+    }
+  ]
+}
