@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	golangImage         = "golang:1.27-bookworm"
+	golangImage         = "golang:1.27.3-bookworm"
 	golangciLintVersion = "v2.14.0"
 	govulncheckVersion  = "v1.9.0"
 	gosecVersion        = "v2.30.0"
@@ -48,8 +48,8 @@ func (m *GoAuth) Lint(ctx context.Context) (string, error) {
 
 // Vulncheck runs govulncheck.
 func (m *GoAuth) Vulncheck(ctx context.Context) (string, error) {
-	base := m.base().WithExec([]string{"sh", "-c", fmt.Sprintf("GOBIN=/usr/local/bin go install golang.org/x/vuln/cmd/govulncheck@%s", govulncheckVersion)})
-	return dag.Golang(m.Src, dagger.GolangOpts{Base: base}).Vulncheck(ctx)
+	base := m.base().WithExec([]string{"sh", "-c", fmt.Sprintf("rm -f /go/bin/govulncheck /usr/local/bin/govulncheck && GOBIN=/usr/local/bin go install golang.org/x/vuln/cmd/govulncheck@%s && /usr/local/bin/govulncheck ./...", govulncheckVersion)})
+	return base.Stdout(ctx)
 }
 
 // Gosec runs gosec.
