@@ -40,7 +40,7 @@ Thanks for contributing to `github.com/disaster37/go-auth`.
 ## Coverage
 
 The CI gate requires at least 90% overall statement coverage and at least 95%
-for `crypto`, `password`, `jwt`, `apitoken`, `httpcookie`, and `secguard`.
+for `crypto`, `password`, `jwt`, `apitoken`, and `httpcookie`.
 
 ## Documentation
 

@@ -25,10 +25,10 @@ and advisory once a patch is available.
 |---|---|---|
 | CWE-208 | Observable timing discrepancy | Precomputed bcrypt dummy hash on unknown/passwordless users; `subtle.ConstantTimeCompare`/`hmac.Equal` on tokens, hashes, and nonces. |
 | CWE-287 | Improper authentication | Multi-audience OIDC `azp` verification; `email_verified` check; strict JWT `typ` separation; HS256 algorithm pinning. |
-| CWE-307 | Excessive authentication attempts | `secguard.LockoutLimiter`, `secguard.LoginThrottle`, and `secguard.BanTracker`. |
+| CWE-307 | Excessive authentication attempts | `lockout.Limiter`, `ratelimit.LoginThrottle`, and `bantracker.BanTracker` from `github.com/disaster37/go-secguard`. |
 | CWE-311 / CWE-319 | Missing encryption of sensitive data | `crypto.Sealer` (AES-256-GCM with HKDF-SHA256 and AAD) for API tokens and upstream OAuth credentials; HTTPS enforcement on OIDC issuers. |
 | CWE-326 / CWE-798 | Weak or hardcoded keys | `config` enforces minimum secret lengths; HKDF domain separation; no hardcoded secrets. |
-| CWE-352 | CSRF / login CSRF | OAuth state JWT bound to an `HttpOnly; SameSite=Lax` nonce cookie, PKCE `S256`, OIDC `nonce`, and `secguard.CheckMutationOrigin`. |
+| CWE-352 | CSRF / login CSRF | OAuth state JWT bound to an `HttpOnly; SameSite=Lax` nonce cookie, PKCE `S256`, OIDC `nonce`, and `headers.CheckMutationOrigin`. |
 | CWE-384 | Session fixation | Fresh JWT pair/session ID on every login and callback; state/nonce cookies cleared immediately. |
 | CWE-400 | Uncontrolled resource consumption | Bounded maps (4096 entries), throttled sweeps, 1 MiB provider response cap, 15s discovery timeout, 64 KiB login body cap. |
 | CWE-532 | Sensitive information in logs | Passwords, hashes, JWTs, API tokens, client secrets, and keys are never logged; sensitive fields use `json:"-"`. |

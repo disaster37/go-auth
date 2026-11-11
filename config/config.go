@@ -6,9 +6,11 @@ import (
 	"fmt"
 	"time"
 
+	sgconfig "github.com/disaster37/go-secguard/config"
+	sgrealip "github.com/disaster37/go-secguard/realip"
+
 	"github.com/disaster37/go-auth/domain"
 	"github.com/disaster37/go-auth/oauth"
-	"github.com/disaster37/go-auth/secguard"
 )
 
 // Config is the top-level go-auth configuration.
@@ -197,8 +199,8 @@ func (c *Config) Validate() error {
 	if err := c.validateOAuth(); err != nil {
 		return err
 	}
-	if _, err := secguard.ParseTrustedProxyCIDRs(c.Security.TrustedProxyCIDRs); err != nil {
-		return fmt.Errorf("security.trusted_proxy_cidrs: %w", err)
+	if _, err := sgrealip.ParseTrustedProxyCIDRs(c.Security.TrustedProxyCIDRs); err != nil {
+		return fmt.Errorf("security.trusted_proxy_cidrs: %w: %w", domain.ErrValidation, err)
 	}
 	if c.BootstrapAdmin.Password != "" && len(c.BootstrapAdmin.Password) < 8 {
 		return fmt.Errorf("bootstrap_admin.password must be at least 8 characters: %w", domain.ErrValidation)
@@ -226,4 +228,40 @@ func (c *Config) validateOAuth() error {
 		return fmt.Errorf("oauth.group_mappings: %w", err)
 	}
 	return nil
+}
+
+// ToSecguardConfig maps the go-auth security and CORS configuration onto the
+// github.com/disaster37/go-secguard configuration structs. The flat go-auth
+// schema has no per-component enable flag, so every component is enabled.
+func (c *Config) ToSecguardConfig() sgconfig.Config {
+	return sgconfig.Config{
+		Lockout: sgconfig.LockoutConfig{
+			Enabled:           true,
+			MaxFailedAttempts: c.Security.MaxFailedAttempts,
+			BaseLockout:       c.Security.BaseLockout,
+			MaxLockout:        c.Security.MaxLockout,
+			EntryTTL:          c.Security.EntryTTL,
+			MaxEntries:        c.Security.MaxEntries,
+		},
+		RateLimit: sgconfig.RateLimitConfig{
+			Enabled:               true,
+			MaxRequests:           c.Security.RateLimitMax,
+			Window:                c.Security.RateLimitWindow,
+			LoginThrottleAttempts: c.Security.LoginThrottleAttempts,
+			LoginThrottleWindow:   c.Security.LoginThrottleWindow,
+			MaxEntries:            c.Security.MaxEntries,
+		},
+		Ban: sgconfig.BanConfig{
+			Enabled:           true,
+			MaxUniqueFailures: c.Security.BanMaxUniqueFailures,
+			BanDuration:       c.Security.BanDuration,
+			Window:            c.Security.BanWindow,
+			MaxEntries:        c.Security.MaxEntries,
+		},
+		Proxy: sgconfig.ProxyConfig{
+			BehindReverseProxy: c.Security.BehindReverseProxy,
+			TrustedProxyCIDRs:  c.Security.TrustedProxyCIDRs,
+		},
+		CORS: sgconfig.CORSConfig{AllowedOrigins: c.CORS.AllowedOrigins},
+	}
 }

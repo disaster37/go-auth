@@ -62,7 +62,7 @@ func (m *GoAuth) TestRace(ctx context.Context) (*dagger.File, error) {
 	ctr := m.base().
 		WithExec([]string{"go", "vet", "./..."}).
 		WithExec([]string{"go", "test", "-race", "-coverprofile=coverage.out", "-covermode=atomic", "./..."}).
-		WithExec([]string{"sh", "-c", "go test -run=^$ -fuzz=FuzzValidateUsername -fuzztime=5s ./password && go test -run=^$ -fuzz=FuzzValidatePassword -fuzztime=5s ./password && go test -run=^$ -fuzz=FuzzParseAccess -fuzztime=5s ./jwt && go test -run=^$ -fuzz=FuzzDecodeSession -fuzztime=5s ./jwt && go test -run=^$ -fuzz=FuzzSafeRedirectPath -fuzztime=5s ./httpcookie && go test -run=^$ -fuzz=FuzzGroupMapper -fuzztime=5s ./oauth && go test -run=^$ -fuzz=FuzzExtractRealIP -fuzztime=5s ./secguard && go test -run=^$ -fuzz=FuzzCheckMutationOrigin -fuzztime=5s ./secguard"})
+		WithExec([]string{"sh", "-c", "go test -run=^$ -fuzz=FuzzValidateUsername -fuzztime=5s ./password && go test -run=^$ -fuzz=FuzzValidatePassword -fuzztime=5s ./password && go test -run=^$ -fuzz=FuzzParseAccess -fuzztime=5s ./jwt && go test -run=^$ -fuzz=FuzzDecodeSession -fuzztime=5s ./jwt && go test -run=^$ -fuzz=FuzzSafeRedirectPath -fuzztime=5s ./httpcookie && go test -run=^$ -fuzz=FuzzGroupMapper -fuzztime=5s ./oauth"})
 	return ctr.File("coverage.out"), nil
 }
 
@@ -89,7 +89,6 @@ awk 'NR>1 { split($1,a,":"); file=a[1]; n=split(file,parts,"/"); pkg=parts[n-1];
 		"jwt":        95.0,
 		"apitoken":   95.0,
 		"httpcookie": 95.0,
-		"secguard":   95.0,
 	}
 	found := map[string]float64{}
 	for _, line := range strings.Split(strings.TrimSpace(out), "\n") {

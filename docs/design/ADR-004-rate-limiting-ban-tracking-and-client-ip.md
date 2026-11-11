@@ -2,7 +2,7 @@
 
 ## Status
 
-Accepted.
+Superseded by [ADR-005](ADR-005-externalize-security-guardrails.md).
 
 ## Context
 

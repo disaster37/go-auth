@@ -11,6 +11,8 @@ import (
 	"testing"
 	"time"
 
+	sgbantracker "github.com/disaster37/go-secguard/bantracker"
+
 	goauth "github.com/disaster37/go-auth"
 	"github.com/disaster37/go-auth/apitoken"
 	"github.com/disaster37/go-auth/domain"
@@ -19,7 +21,6 @@ import (
 	"github.com/disaster37/go-auth/oauth"
 	"github.com/disaster37/go-auth/observ"
 	"github.com/disaster37/go-auth/password"
-	"github.com/disaster37/go-auth/secguard"
 	"github.com/disaster37/go-auth/store"
 )
 
@@ -166,7 +167,7 @@ func TestMutationOriginMiddleware(t *testing.T) {
 }
 
 func TestBanCheckMiddleware(t *testing.T) {
-	tracker := secguard.NewBanTracker(10, nil)
+	tracker := sgbantracker.New(10, nil)
 	tracker.RecordAndBan("203.0.113.5", "fp", 1, time.Minute, time.Minute)
 	handler := BanCheckMiddleware(tracker, false, nil)(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
@@ -444,7 +445,7 @@ func TestMutationOriginAllowed(t *testing.T) {
 }
 
 func TestBanCheckMiddlewareError(t *testing.T) {
-	tracker := secguard.NewBanTracker(10, nil)
+	tracker := sgbantracker.New(10, nil)
 	handler := BanCheckMiddleware(tracker, false, nil)(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	}))

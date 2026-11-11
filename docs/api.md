@@ -441,6 +441,7 @@ Package config defines the go\-auth configuration structs with mapstructure/json
 - [type CORSConfig](<#CORSConfig>)
 - [type Config](<#Config>)
   - [func DefaultConfig\(\) Config](<#DefaultConfig>)
+  - [func \(c \*Config\) ToSecguardConfig\(\) sgconfig.Config](<#Config.ToSecguardConfig>)
   - [func \(c \*Config\) Validate\(\) error](<#Config.Validate>)
 - [type CookieConfig](<#CookieConfig>)
 - [type InternalConfig](<#InternalConfig>)
@@ -452,7 +453,7 @@ Package config defines the go\-auth configuration structs with mapstructure/json
 
 
 <a name="BootstrapAdminConfig"></a>
-## type [BootstrapAdminConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L118-L121>)
+## type [BootstrapAdminConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L120-L123>)
 
 BootstrapAdminConfig configures the dev bootstrap admin.
 
@@ -464,7 +465,7 @@ type BootstrapAdminConfig struct {
 ```
 
 <a name="CORSConfig"></a>
-## type [CORSConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L95-L97>)
+## type [CORSConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L97-L99>)
 
 CORSConfig configures allowed browser origins.
 
@@ -475,7 +476,7 @@ type CORSConfig struct {
 ```
 
 <a name="Config"></a>
-## type [Config](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L15-L25>)
+## type [Config](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L17-L27>)
 
 Config is the top\-level go\-auth configuration.
 
@@ -494,7 +495,7 @@ type Config struct {
 ```
 
 <a name="DefaultConfig"></a>
-### func [DefaultConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L124>)
+### func [DefaultConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L126>)
 
 ```go
 func DefaultConfig() Config
@@ -502,8 +503,17 @@ func DefaultConfig() Config
 
 DefaultConfig returns the default configuration.
 
+<a name="Config.ToSecguardConfig"></a>
+### func \(\*Config\) [ToSecguardConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L236>)
+
+```go
+func (c *Config) ToSecguardConfig() sgconfig.Config
+```
+
+ToSecguardConfig maps the go\-auth security and CORS configuration onto the github.com/disaster37/go\-secguard configuration structs. The flat go\-auth schema has no per\-component enable flag, so every component is enabled.
+
 <a name="Config.Validate"></a>
-### func \(\*Config\) [Validate](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L175>)
+### func \(\*Config\) [Validate](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L177>)
 
 ```go
 func (c *Config) Validate() error
@@ -512,7 +522,7 @@ func (c *Config) Validate() error
 Validate enforces the minimum secret lengths, TTL sanity, and provider completeness rules.
 
 <a name="CookieConfig"></a>
-## type [CookieConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L83-L92>)
+## type [CookieConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L85-L94>)
 
 CookieConfig configures cookie names and flags.
 
@@ -530,7 +540,7 @@ type CookieConfig struct {
 ```
 
 <a name="InternalConfig"></a>
-## type [InternalConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L28-L30>)
+## type [InternalConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L30-L32>)
 
 InternalConfig configures the legacy flat\-file token fallback.
 
@@ -541,7 +551,7 @@ type InternalConfig struct {
 ```
 
 <a name="JWTConfig"></a>
-## type [JWTConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L33-L39>)
+## type [JWTConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L35-L41>)
 
 JWTConfig configures HS256 JWT issuance.
 
@@ -556,7 +566,7 @@ type JWTConfig struct {
 ```
 
 <a name="OAuthConfig"></a>
-## type [OAuthConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L57-L80>)
+## type [OAuthConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L59-L82>)
 
 OAuthConfig configures the OAuth2/OIDC provider.
 
@@ -588,7 +598,7 @@ type OAuthConfig struct {
 ```
 
 <a name="SecurityConfig"></a>
-## type [SecurityConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L100-L115>)
+## type [SecurityConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L102-L117>)
 
 SecurityConfig configures the defense\-in\-depth guardrails.
 
@@ -612,7 +622,7 @@ type SecurityConfig struct {
 ```
 
 <a name="SessionConfig"></a>
-## type [SessionConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L42-L46>)
+## type [SessionConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L44-L48>)
 
 SessionConfig configures compact HMAC session tokens.
 
@@ -625,7 +635,7 @@ type SessionConfig struct {
 ```
 
 <a name="TokenConfig"></a>
-## type [TokenConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L49-L54>)
+## type [TokenConfig](<https://github.com/disaster37/go-auth/blob/main/config/config.go#L51-L56>)
 
 TokenConfig configures API tokens and at\-rest encryption.
 
@@ -1418,11 +1428,11 @@ DecodeSession verifies and decodes a session token, rejecting tokens whose Expir
 import "github.com/disaster37/go-auth/nethttp"
 ```
 
-Package nethttp is an optional net/http adapter providing middleware and handlers without pulling any external router.
+Package nethttp is an optional net/http adapter providing middleware and handlers without pulling any external router. Additional middleware \(RealIPMiddleware, RateLimitMiddleware, LockoutMiddleware\) and ban admin handlers \(APIBansHandler, APIUnbanHandler\) are available from github.com/disaster37/go\-secguard/nethttp.
 
 ## Index
 
-- [func BanCheckMiddleware\(tracker \*secguard.BanTracker, behindProxy bool, trustedCIDRs \[\]\*net.IPNet\) func\(http.Handler\) http.Handler](<#BanCheckMiddleware>)
+- [func BanCheckMiddleware\(tracker \*sgbantracker.BanTracker, behindProxy bool, trustedCIDRs \[\]\*net.IPNet\) func\(http.Handler\) http.Handler](<#BanCheckMiddleware>)
 - [func ContextWithIdentity\(ctx context.Context, id \*domain.Identity\) context.Context](<#ContextWithIdentity>)
 - [func ExtractBearer\(r \*http.Request, accessCookieName string, allowQueryToken bool\) string](<#ExtractBearer>)
 - [func IdentityFromContext\(ctx context.Context\) \*domain.Identity](<#IdentityFromContext>)
@@ -1440,16 +1450,16 @@ Package nethttp is an optional net/http adapter providing middleware and handler
 
 
 <a name="BanCheckMiddleware"></a>
-## func [BanCheckMiddleware](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L112>)
+## func [BanCheckMiddleware](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L122>)
 
 ```go
-func BanCheckMiddleware(tracker *secguard.BanTracker, behindProxy bool, trustedCIDRs []*net.IPNet) func(http.Handler) http.Handler
+func BanCheckMiddleware(tracker *sgbantracker.BanTracker, behindProxy bool, trustedCIDRs []*net.IPNet) func(http.Handler) http.Handler
 ```
 
 BanCheckMiddleware rejects requests from banned client IPs.
 
 <a name="ContextWithIdentity"></a>
-## func [ContextWithIdentity](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L30>)
+## func [ContextWithIdentity](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L37>)
 
 ```go
 func ContextWithIdentity(ctx context.Context, id *domain.Identity) context.Context
@@ -1458,7 +1468,7 @@ func ContextWithIdentity(ctx context.Context, id *domain.Identity) context.Conte
 ContextWithIdentity stores id in ctx.
 
 <a name="ExtractBearer"></a>
-## func [ExtractBearer](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L36>)
+## func [ExtractBearer](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L43>)
 
 ```go
 func ExtractBearer(r *http.Request, accessCookieName string, allowQueryToken bool) string
@@ -1467,7 +1477,7 @@ func ExtractBearer(r *http.Request, accessCookieName string, allowQueryToken boo
 ExtractBearer returns the bearer credential from the Authorization header, the access cookie, or \(when allowQueryToken\) the "token" query parameter.
 
 <a name="IdentityFromContext"></a>
-## func [IdentityFromContext](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L24>)
+## func [IdentityFromContext](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L31>)
 
 ```go
 func IdentityFromContext(ctx context.Context) *domain.Identity
@@ -1494,7 +1504,7 @@ func LogoutHandler(svc *goauth.Service, cookieCfg httpcookie.Config, isTLS bool)
 LogoutHandler revokes the caller's JWTs and clears the cookie pair.
 
 <a name="MutationOriginMiddleware"></a>
-## func [MutationOriginMiddleware](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L99>)
+## func [MutationOriginMiddleware](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L106>)
 
 ```go
 func MutationOriginMiddleware(allowedOrigins []string) func(http.Handler) http.Handler
@@ -1530,7 +1540,7 @@ func RefreshHandler(svc *goauth.Service, jwtSvc *jwt.Service, cookieCfg httpcook
 RefreshHandler rotates the JWT cookie pair from the refresh cookie.
 
 <a name="RequireAdmin"></a>
-## func [RequireAdmin](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L70>)
+## func [RequireAdmin](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L77>)
 
 ```go
 func RequireAdmin(svc *goauth.Service, cookieCfg httpcookie.Config) func(http.Handler) http.Handler
@@ -1539,7 +1549,7 @@ func RequireAdmin(svc *goauth.Service, cookieCfg httpcookie.Config) func(http.Ha
 RequireAdmin requires an authenticated admin identity.
 
 <a name="RequireAuth"></a>
-## func [RequireAuth](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L55>)
+## func [RequireAuth](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L62>)
 
 ```go
 func RequireAuth(svc *goauth.Service, cookieCfg httpcookie.Config) func(http.Handler) http.Handler
@@ -1548,7 +1558,7 @@ func RequireAuth(svc *goauth.Service, cookieCfg httpcookie.Config) func(http.Han
 RequireAuth resolves the request credential and stores the Identity in the request context, rejecting unauthenticated requests.
 
 <a name="SecurityHeadersMiddleware"></a>
-## func [SecurityHeadersMiddleware](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L89>)
+## func [SecurityHeadersMiddleware](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L96>)
 
 ```go
 func SecurityHeadersMiddleware(next http.Handler) http.Handler
@@ -1557,7 +1567,7 @@ func SecurityHeadersMiddleware(next http.Handler) http.Handler
 SecurityHeadersMiddleware applies browser hardening headers.
 
 <a name="StatusCodeForError"></a>
-## func [StatusCodeForError](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L138>)
+## func [StatusCodeForError](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L148>)
 
 ```go
 func StatusCodeForError(err error) (int, string)
@@ -1566,7 +1576,7 @@ func StatusCodeForError(err error) (int, string)
 StatusCodeForError maps an error to an HTTP status code and client message.
 
 <a name="WriteError"></a>
-## func [WriteError](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L130>)
+## func [WriteError](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L140>)
 
 ```go
 func WriteError(w http.ResponseWriter, err error)
@@ -2460,392 +2470,6 @@ func WithLogger(logger observ.Logger) ServiceOption
 ```
 
 WithLogger sets the logger.
-
-# secguard
-
-```go
-import "github.com/disaster37/go-auth/secguard"
-```
-
-Package secguard provides rate limiting, exponential lockout, credential\-stuffing ban tracking, right\-to\-left trusted\-proxy client IP extraction, security headers, and CSRF mutation origin validation.
-
-## Index
-
-- [Constants](<#constants>)
-- [func CheckMutationOrigin\(method, originHeader, refererHeader string, allowedOrigins \[\]string\) error](<#CheckMutationOrigin>)
-- [func DefaultSecurityHeaders\(path string, isTLS bool\) map\[string\]string](<#DefaultSecurityHeaders>)
-- [func ExtractRealIP\(remoteAddr, xForwardedFor, xRealIP string, behindReverseProxy bool, trustedCIDRs \[\]\*net.IPNet\) \(net.IP, error\)](<#ExtractRealIP>)
-- [func ExtractRequestOrigin\(originHeader, refererHeader string\) string](<#ExtractRequestOrigin>)
-- [func FingerprintLogin\(username string\) string](<#FingerprintLogin>)
-- [func FingerprintSignature\(channel, signatureValue string\) string](<#FingerprintSignature>)
-- [func FingerprintToken\(token string\) string](<#FingerprintToken>)
-- [func GetRealIPFromRequest\(r \*http.Request, behindReverseProxy bool, trustedCIDRs \[\]\*net.IPNet\) \(net.IP, error\)](<#GetRealIPFromRequest>)
-- [func LoginLimitKey\(username, clientIP string\) string](<#LoginLimitKey>)
-- [func ParseTrustedProxyCIDRs\(entries \[\]string\) \(\[\]\*net.IPNet, error\)](<#ParseTrustedProxyCIDRs>)
-- [func PasswordChangeLimitKey\(userID, clientIP string\) string](<#PasswordChangeLimitKey>)
-- [type BanInfo](<#BanInfo>)
-- [type BanTracker](<#BanTracker>)
-  - [func NewBanTracker\(maxEntries int, clock func\(\) time.Time\) \*BanTracker](<#NewBanTracker>)
-  - [func \(bt \*BanTracker\) IsBanned\(ip string\) bool](<#BanTracker.IsBanned>)
-  - [func \(bt \*BanTracker\) ListBans\(\) \[\]BanInfo](<#BanTracker.ListBans>)
-  - [func \(bt \*BanTracker\) RecordAndBan\(ip, fingerprint string, maxUniqueFailures int, banDuration, window time.Duration\) bool](<#BanTracker.RecordAndBan>)
-  - [func \(bt \*BanTracker\) Sweep\(window time.Duration\)](<#BanTracker.Sweep>)
-  - [func \(bt \*BanTracker\) Unban\(ip string\)](<#BanTracker.Unban>)
-- [type LockoutConfig](<#LockoutConfig>)
-- [type LockoutLimiter](<#LockoutLimiter>)
-  - [func NewLockoutLimiter\(cfg LockoutConfig\) \*LockoutLimiter](<#NewLockoutLimiter>)
-  - [func \(l \*LockoutLimiter\) Allow\(key string\) bool](<#LockoutLimiter.Allow>)
-  - [func \(l \*LockoutLimiter\) RecordFailure\(key string\) time.Duration](<#LockoutLimiter.RecordFailure>)
-  - [func \(l \*LockoutLimiter\) RecordSuccess\(key string\)](<#LockoutLimiter.RecordSuccess>)
-- [type LoginThrottle](<#LoginThrottle>)
-  - [func NewLoginThrottle\(maxEntries int, clock func\(\) time.Time\) \*LoginThrottle](<#NewLoginThrottle>)
-  - [func \(lt \*LoginThrottle\) Allow\(key string, maxAttempts int, window time.Duration\) bool](<#LoginThrottle.Allow>)
-  - [func \(lt \*LoginThrottle\) Clear\(key string\)](<#LoginThrottle.Clear>)
-- [type RateLimiter](<#RateLimiter>)
-  - [func NewRateLimiter\(maxEntries int, clock func\(\) time.Time\) \*RateLimiter](<#NewRateLimiter>)
-  - [func \(rl \*RateLimiter\) Allow\(key string, maxRequests int, window time.Duration\) bool](<#RateLimiter.Allow>)
-  - [func \(rl \*RateLimiter\) Sweep\(window time.Duration\)](<#RateLimiter.Sweep>)
-
-
-## Constants
-
-<a name="DefaultMaxFailedAttempts"></a>
-
-```go
-const (
-    // DefaultMaxFailedAttempts is the number of consecutive failures after
-    // which lockouts start (CWE-307).
-    DefaultMaxFailedAttempts = 5
-    // DefaultBaseLockout is the first lockout duration once the threshold is
-    // reached; it doubles with every further failure.
-    DefaultBaseLockout = 30 * time.Second
-    // DefaultMaxLockout caps the exponential lockout growth.
-    DefaultMaxLockout = 15 * time.Minute
-    // DefaultEntryTTL is how long an idle failure record is kept.
-    DefaultEntryTTL = 30 * time.Minute
-    // DefaultMaxEntries bounds the tracker map (CWE-770).
-    DefaultMaxEntries = 4096
-    // MaxLockoutShift caps the exponential shift so the duration computation
-    // cannot overflow.
-    MaxLockoutShift = 16
-)
-```
-
-<a name="CheckMutationOrigin"></a>
-## func [CheckMutationOrigin](<https://github.com/disaster37/go-auth/blob/main/secguard/headers.go#L50>)
-
-```go
-func CheckMutationOrigin(method, originHeader, refererHeader string, allowedOrigins []string) error
-```
-
-CheckMutationOrigin rejects cross\-origin mutating browser requests by validating the Origin \(falling back to the Referer origin\) against the allowed origins \(CWE\-352\). Requests without either header \(non\-browser clients\) pass through. An empty allowlist or "\*" allows any origin.
-
-<a name="DefaultSecurityHeaders"></a>
-## func [DefaultSecurityHeaders](<https://github.com/disaster37/go-auth/blob/main/secguard/headers.go#L14>)
-
-```go
-func DefaultSecurityHeaders(path string, isTLS bool) map[string]string
-```
-
-DefaultSecurityHeaders returns the browser hardening headers for a response \(CWE\-693\). Cache\-Control is set for API paths; HSTS is set only over TLS.
-
-<a name="ExtractRealIP"></a>
-## func [ExtractRealIP](<https://github.com/disaster37/go-auth/blob/main/secguard/realip.go#L69>)
-
-```go
-func ExtractRealIP(remoteAddr, xForwardedFor, xRealIP string, behindReverseProxy bool, trustedCIDRs []*net.IPNet) (net.IP, error)
-```
-
-ExtractRealIP extracts the client IP. Forwarded headers \(X\-Forwarded\-For, X\-Real\-IP\) are honored only when behindReverseProxy is enabled AND the direct peer is inside a trusted\-proxy CIDR. XFF is walked right\-to\-left, skipping trusted proxies, so a client cannot spoof its address by prepending an untrusted value \(CWE\-348\).
-
-<a name="ExtractRequestOrigin"></a>
-## func [ExtractRequestOrigin](<https://github.com/disaster37/go-auth/blob/main/secguard/headers.go#L32>)
-
-```go
-func ExtractRequestOrigin(originHeader, refererHeader string) string
-```
-
-ExtractRequestOrigin returns the request's Origin header, or the origin derived from the Referer header when Origin is absent.
-
-<a name="FingerprintLogin"></a>
-## func [FingerprintLogin](<https://github.com/disaster37/go-auth/blob/main/secguard/bantracker.go#L201>)
-
-```go
-func FingerprintLogin(username string) string
-```
-
-FingerprintLogin returns a stable SHA\-256 fingerprint of a login username.
-
-<a name="FingerprintSignature"></a>
-## func [FingerprintSignature](<https://github.com/disaster37/go-auth/blob/main/secguard/bantracker.go#L212>)
-
-```go
-func FingerprintSignature(channel, signatureValue string) string
-```
-
-FingerprintSignature returns a stable SHA\-256 fingerprint of a channel signature.
-
-<a name="FingerprintToken"></a>
-## func [FingerprintToken](<https://github.com/disaster37/go-auth/blob/main/secguard/bantracker.go#L206>)
-
-```go
-func FingerprintToken(token string) string
-```
-
-FingerprintToken returns a stable SHA\-256 fingerprint of a token.
-
-<a name="GetRealIPFromRequest"></a>
-## func [GetRealIPFromRequest](<https://github.com/disaster37/go-auth/blob/main/secguard/realip.go#L99>)
-
-```go
-func GetRealIPFromRequest(r *http.Request, behindReverseProxy bool, trustedCIDRs []*net.IPNet) (net.IP, error)
-```
-
-GetRealIPFromRequest extracts the client IP from an \*http.Request.
-
-<a name="LoginLimitKey"></a>
-## func [LoginLimitKey](<https://github.com/disaster37/go-auth/blob/main/secguard/lockout.go#L82>)
-
-```go
-func LoginLimitKey(username, clientIP string) string
-```
-
-LoginLimitKey returns the lockout key for a username \+ client IP.
-
-<a name="ParseTrustedProxyCIDRs"></a>
-## func [ParseTrustedProxyCIDRs](<https://github.com/disaster37/go-auth/blob/main/secguard/realip.go#L12>)
-
-```go
-func ParseTrustedProxyCIDRs(entries []string) ([]*net.IPNet, error)
-```
-
-ParseTrustedProxyCIDRs parses a list of CIDRs/IPs into networks. Bare IPs are treated as /32 \(or /128\). Invalid entries return an error.
-
-<a name="PasswordChangeLimitKey"></a>
-## func [PasswordChangeLimitKey](<https://github.com/disaster37/go-auth/blob/main/secguard/lockout.go#L87>)
-
-```go
-func PasswordChangeLimitKey(userID, clientIP string) string
-```
-
-PasswordChangeLimitKey returns the lockout key for a user ID \+ client IP.
-
-<a name="BanInfo"></a>
-## type [BanInfo](<https://github.com/disaster37/go-auth/blob/main/secguard/bantracker.go#L17-L21>)
-
-BanInfo describes an active ban.
-
-```go
-type BanInfo struct {
-    IP             string    `json:"ip"`
-    Until          time.Time `json:"until"`
-    UniqueFailures int       `json:"unique_failures"`
-}
-```
-
-<a name="BanTracker"></a>
-## type [BanTracker](<https://github.com/disaster37/go-auth/blob/main/secguard/bantracker.go#L26-L33>)
-
-BanTracker counts unique credential failures per IP and bans suspicious clients \(credential stuffing\), while tolerating a single misconfigured client repeating the same credential.
-
-```go
-type BanTracker struct {
-    // contains filtered or unexported fields
-}
-```
-
-<a name="NewBanTracker"></a>
-### func [NewBanTracker](<https://github.com/disaster37/go-auth/blob/main/secguard/bantracker.go#L36>)
-
-```go
-func NewBanTracker(maxEntries int, clock func() time.Time) *BanTracker
-```
-
-NewBanTracker returns a BanTracker bounded to maxEntries IPs.
-
-<a name="BanTracker.IsBanned"></a>
-### func \(\*BanTracker\) [IsBanned](<https://github.com/disaster37/go-auth/blob/main/secguard/bantracker.go#L52>)
-
-```go
-func (bt *BanTracker) IsBanned(ip string) bool
-```
-
-IsBanned reports whether ip is currently banned.
-
-<a name="BanTracker.ListBans"></a>
-### func \(\*BanTracker\) [ListBans](<https://github.com/disaster37/go-auth/blob/main/secguard/bantracker.go#L116>)
-
-```go
-func (bt *BanTracker) ListBans() []BanInfo
-```
-
-ListBans returns the currently active bans.
-
-<a name="BanTracker.RecordAndBan"></a>
-### func \(\*BanTracker\) [RecordAndBan](<https://github.com/disaster37/go-auth/blob/main/secguard/bantracker.go#L69>)
-
-```go
-func (bt *BanTracker) RecordAndBan(ip, fingerprint string, maxUniqueFailures int, banDuration, window time.Duration) bool
-```
-
-RecordAndBan records a credential failure for ip and bans it when the number of unique fingerprints within window reaches maxUniqueFailures. It returns true when the IP is banned as a result of this call.
-
-<a name="BanTracker.Sweep"></a>
-### func \(\*BanTracker\) [Sweep](<https://github.com/disaster37/go-auth/blob/main/secguard/bantracker.go#L143>)
-
-```go
-func (bt *BanTracker) Sweep(window time.Duration)
-```
-
-Sweep removes expired failure entries and expired bans.
-
-<a name="BanTracker.Unban"></a>
-### func \(\*BanTracker\) [Unban](<https://github.com/disaster37/go-auth/blob/main/secguard/bantracker.go#L136>)
-
-```go
-func (bt *BanTracker) Unban(ip string)
-```
-
-Unban removes any ban for ip.
-
-<a name="LockoutConfig"></a>
-## type [LockoutConfig](<https://github.com/disaster37/go-auth/blob/main/secguard/lockout.go#L31-L38>)
-
-LockoutConfig configures a LockoutLimiter.
-
-```go
-type LockoutConfig struct {
-    MaxFailedAttempts int
-    BaseLockout       time.Duration
-    MaxLockout        time.Duration
-    EntryTTL          time.Duration
-    MaxEntries        int
-    Clock             func() time.Time
-}
-```
-
-<a name="LockoutLimiter"></a>
-## type [LockoutLimiter](<https://github.com/disaster37/go-auth/blob/main/secguard/lockout.go#L70-L74>)
-
-LockoutLimiter tracks failed authentication attempts per key and imposes exponentially growing lockouts after repeated failures \(CWE\-307\).
-
-```go
-type LockoutLimiter struct {
-    // contains filtered or unexported fields
-}
-```
-
-<a name="NewLockoutLimiter"></a>
-### func [NewLockoutLimiter](<https://github.com/disaster37/go-auth/blob/main/secguard/lockout.go#L77>)
-
-```go
-func NewLockoutLimiter(cfg LockoutConfig) *LockoutLimiter
-```
-
-NewLockoutLimiter returns a LockoutLimiter.
-
-<a name="LockoutLimiter.Allow"></a>
-### func \(\*LockoutLimiter\) [Allow](<https://github.com/disaster37/go-auth/blob/main/secguard/lockout.go#L92>)
-
-```go
-func (l *LockoutLimiter) Allow(key string) bool
-```
-
-Allow reports whether key may attempt authentication right now.
-
-<a name="LockoutLimiter.RecordFailure"></a>
-### func \(\*LockoutLimiter\) [RecordFailure](<https://github.com/disaster37/go-auth/blob/main/secguard/lockout.go#L106>)
-
-```go
-func (l *LockoutLimiter) RecordFailure(key string) time.Duration
-```
-
-RecordFailure records a failed attempt and returns the lockout duration it triggered \(0 when the failure did not yet cause a lockout\).
-
-<a name="LockoutLimiter.RecordSuccess"></a>
-### func \(\*LockoutLimiter\) [RecordSuccess](<https://github.com/disaster37/go-auth/blob/main/secguard/lockout.go#L142>)
-
-```go
-func (l *LockoutLimiter) RecordSuccess(key string)
-```
-
-RecordSuccess clears the failure history for key.
-
-<a name="LoginThrottle"></a>
-## type [LoginThrottle](<https://github.com/disaster37/go-auth/blob/main/secguard/ratelimit.go#L97-L102>)
-
-LoginThrottle bounds repeated failed logins per account.
-
-```go
-type LoginThrottle struct {
-    // contains filtered or unexported fields
-}
-```
-
-<a name="NewLoginThrottle"></a>
-### func [NewLoginThrottle](<https://github.com/disaster37/go-auth/blob/main/secguard/ratelimit.go#L105>)
-
-```go
-func NewLoginThrottle(maxEntries int, clock func() time.Time) *LoginThrottle
-```
-
-NewLoginThrottle returns a LoginThrottle bounded to maxEntries keys.
-
-<a name="LoginThrottle.Allow"></a>
-### func \(\*LoginThrottle\) [Allow](<https://github.com/disaster37/go-auth/blob/main/secguard/ratelimit.go#L116>)
-
-```go
-func (lt *LoginThrottle) Allow(key string, maxAttempts int, window time.Duration) bool
-```
-
-Allow reports whether the account may attempt another login.
-
-<a name="LoginThrottle.Clear"></a>
-### func \(\*LoginThrottle\) [Clear](<https://github.com/disaster37/go-auth/blob/main/secguard/ratelimit.go#L142>)
-
-```go
-func (lt *LoginThrottle) Clear(key string)
-```
-
-Clear resets the throttle state for a key after a successful login.
-
-<a name="RateLimiter"></a>
-## type [RateLimiter](<https://github.com/disaster37/go-auth/blob/main/secguard/ratelimit.go#L9-L15>)
-
-RateLimiter is a bounded sliding\-window per\-key request limiter.
-
-```go
-type RateLimiter struct {
-    // contains filtered or unexported fields
-}
-```
-
-<a name="NewRateLimiter"></a>
-### func [NewRateLimiter](<https://github.com/disaster37/go-auth/blob/main/secguard/ratelimit.go#L18>)
-
-```go
-func NewRateLimiter(maxEntries int, clock func() time.Time) *RateLimiter
-```
-
-NewRateLimiter returns a RateLimiter bounded to maxEntries keys.
-
-<a name="RateLimiter.Allow"></a>
-### func \(\*RateLimiter\) [Allow](<https://github.com/disaster37/go-auth/blob/main/secguard/ratelimit.go#L29>)
-
-```go
-func (rl *RateLimiter) Allow(key string, maxRequests int, window time.Duration) bool
-```
-
-Allow reports whether key may make another request within window.
-
-<a name="RateLimiter.Sweep"></a>
-### func \(\*RateLimiter\) [Sweep](<https://github.com/disaster37/go-auth/blob/main/secguard/ratelimit.go#L54>)
-
-```go
-func (rl *RateLimiter) Sweep(window time.Duration)
-```
-
-Sweep removes keys with no timestamps within window.
 
 # store
 

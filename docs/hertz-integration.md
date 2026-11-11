@@ -11,11 +11,11 @@ import (
 	"net"
 
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/disaster37/go-secguard/realip"
 
 	goauth "github.com/disaster37/go-auth"
 	"github.com/disaster37/go-auth/httpcookie"
 	"github.com/disaster37/go-auth/nethttp"
-	"github.com/disaster37/go-auth/secguard"
 )
 
 // RequireAuth resolves the bearer credential and stores the identity in the
@@ -48,7 +48,7 @@ func SetPair(c *app.RequestContext, cfg httpcookie.Config, isTLS bool, access, r
 
 // RealIP resolves the client IP behind trusted proxies.
 func RealIP(c *app.RequestContext, behindProxy bool, trusted []*net.IPNet) string {
-	ip, err := secguard.ExtractRealIP(
+	ip, err := realip.ExtractRealIP(
 		string(c.RemoteAddr().String()),
 		string(c.GetHeader("X-Forwarded-For")),
 		string(c.GetHeader("X-Real-IP")),
@@ -76,8 +76,11 @@ Notes:
 
 - `httpcookie.Spec` is framework-agnostic; `Spec.ToStdlib()` is available when
   you need a `*http.Cookie`.
-- Use `secguard.DefaultSecurityHeaders` and `secguard.CheckMutationOrigin` in
-  Hertz middleware exactly as the `nethttp` adapter does.
+- Use `headers.DefaultSecurityHeaders` and `headers.CheckMutationOrigin` from
+  `github.com/disaster37/go-secguard/headers` in Hertz middleware exactly as the
+  `nethttp` adapter does. `headers.CheckMutationOrigin` returns
+  `sgdomain.ErrOriginNotAllowed` (from `github.com/disaster37/go-secguard/domain`);
+  `nethttp.StatusCodeForError` maps that sentinel to HTTP 403.
 - The `nethttp` package is optional; importing it from a Hertz binary is fine
   when you want the shared error mapping, but the core packages remain
   framework-free.

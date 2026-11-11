@@ -14,8 +14,7 @@ consumer.
 ## Decision
 
 - Core packages (`domain`, `crypto`, `store`, `password`, `jwt`, `apitoken`,
-  `oauth`, `httpcookie`, `secguard`, `observ`, `config`) import no HTTP
-  framework.
+  `oauth`, `httpcookie`, `observ`, `config`) import no HTTP framework.
 - Shared entities and sentinel errors live in `domain` (stdlib only). The root
   `goauth` package re-exports them and provides the turnkey `Service` facade.
 - `nethttp` is an optional adapter built only on the standard library.
