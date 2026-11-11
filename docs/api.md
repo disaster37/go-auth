@@ -1450,7 +1450,7 @@ Package nethttp is an optional net/http adapter providing middleware and handler
 
 
 <a name="BanCheckMiddleware"></a>
-## func [BanCheckMiddleware](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L123>)
+## func [BanCheckMiddleware](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L122>)
 
 ```go
 func BanCheckMiddleware(tracker *sgbantracker.BanTracker, behindProxy bool, trustedCIDRs []*net.IPNet) func(http.Handler) http.Handler
@@ -1567,7 +1567,7 @@ func SecurityHeadersMiddleware(next http.Handler) http.Handler
 SecurityHeadersMiddleware applies browser hardening headers.
 
 <a name="StatusCodeForError"></a>
-## func [StatusCodeForError](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L149>)
+## func [StatusCodeForError](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L148>)
 
 ```go
 func StatusCodeForError(err error) (int, string)
@@ -1576,7 +1576,7 @@ func StatusCodeForError(err error) (int, string)
 StatusCodeForError maps an error to an HTTP status code and client message.
 
 <a name="WriteError"></a>
-## func [WriteError](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L141>)
+## func [WriteError](<https://github.com/disaster37/go-auth/blob/main/nethttp/middleware.go#L140>)
 
 ```go
 func WriteError(w http.ResponseWriter, err error)

@@ -137,6 +137,7 @@ func TestValidateSecurityAndBootstrap(t *testing.T) {
 func TestToSecguardConfig(t *testing.T) {
 	cfg := DefaultConfig()
 	cfg.CORS.AllowedOrigins = []string{"https://app.example.com"}
+	cfg.Security.TrustedProxyCIDRs = []string{"10.0.0.0/8", "192.168.0.0/16"}
 
 	got := cfg.ToSecguardConfig()
 
@@ -190,6 +191,11 @@ func TestToSecguardConfig(t *testing.T) {
 	}
 	if len(got.Proxy.TrustedProxyCIDRs) != len(cfg.Security.TrustedProxyCIDRs) {
 		t.Fatalf("trusted proxy cidrs=%v", got.Proxy.TrustedProxyCIDRs)
+	}
+	for i, cidr := range cfg.Security.TrustedProxyCIDRs {
+		if got.Proxy.TrustedProxyCIDRs[i] != cidr {
+			t.Fatalf("trusted proxy cidrs[%d]=%q want %q", i, got.Proxy.TrustedProxyCIDRs[i], cidr)
+		}
 	}
 	if len(got.CORS.AllowedOrigins) != 1 || got.CORS.AllowedOrigins[0] != cfg.CORS.AllowedOrigins[0] {
 		t.Fatalf("cors allowed origins=%v", got.CORS.AllowedOrigins)
