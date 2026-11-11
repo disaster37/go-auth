@@ -64,11 +64,11 @@ All notable changes to this project are documented here. The format follows
 
 ### Removed
 
-- The local `secguard` package and all 16 exported symbols (`LockoutConfig`,
+- The local `secguard` package: 16 exported types/functions (`LockoutConfig`,
   `LockoutLimiter`, `NewLockoutLimiter`, `RateLimiter`, `NewRateLimiter`,
   `LoginThrottle`, `NewLoginThrottle`, `BanInfo`, `BanTracker`, `NewBanTracker`,
   `ParseTrustedProxyCIDRs`, `ExtractRealIP`, `GetRealIPFromRequest`,
-  `DefaultSecurityHeaders`, `ExtractRequestOrigin`, `CheckMutationOrigin`) plus
-  the `LoginLimitKey`, `PasswordChangeLimitKey`, `FingerprintLogin`,
-  `FingerprintToken`, and `FingerprintSignature` helpers and the six exported
+  `DefaultSecurityHeaders`, `ExtractRequestOrigin`, `CheckMutationOrigin`), the
+  `LoginLimitKey`, `PasswordChangeLimitKey`, `FingerprintLogin`,
+  `FingerprintToken`, and `FingerprintSignature` helpers, and six exported
   default constants.

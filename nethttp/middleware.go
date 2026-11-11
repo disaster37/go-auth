@@ -108,8 +108,7 @@ func MutationOriginMiddleware(allowedOrigins []string) func(http.Handler) http.H
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if err := sgheaders.CheckMutationOrigin(r.Method, r.Header.Get("Origin"), r.Header.Get("Referer"), allowedOrigins); err != nil {
 				if errors.Is(err, sgdomain.ErrOriginNotAllowed) {
-					WriteError(w, domain.ErrOriginNotAllowed)
-					return
+					err = domain.ErrOriginNotAllowed
 				}
 				WriteError(w, err)
 				return
