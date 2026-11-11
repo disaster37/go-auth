@@ -1,5 +1,8 @@
 // Package nethttp is an optional net/http adapter providing middleware and
-// handlers without pulling any external router.
+// handlers without pulling any external router. Additional middleware
+// (RealIPMiddleware, RateLimitMiddleware, LockoutMiddleware) and ban admin
+// handlers (APIBansHandler, APIUnbanHandler) are available from
+// github.com/disaster37/go-secguard/nethttp.
 package nethttp
 
 import (
@@ -10,10 +13,14 @@ import (
 	"net/http"
 	"strings"
 
+	sgbantracker "github.com/disaster37/go-secguard/bantracker"
+	sgdomain "github.com/disaster37/go-secguard/domain"
+	sgheaders "github.com/disaster37/go-secguard/headers"
+	sgrealip "github.com/disaster37/go-secguard/realip"
+
 	goauth "github.com/disaster37/go-auth"
 	"github.com/disaster37/go-auth/domain"
 	"github.com/disaster37/go-auth/httpcookie"
-	"github.com/disaster37/go-auth/secguard"
 )
 
 type contextKey struct{}
@@ -88,7 +95,7 @@ func RequireAdmin(svc *goauth.Service, cookieCfg httpcookie.Config) func(http.Ha
 // SecurityHeadersMiddleware applies browser hardening headers.
 func SecurityHeadersMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		for k, v := range secguard.DefaultSecurityHeaders(r.URL.Path, r.TLS != nil) {
+		for k, v := range sgheaders.DefaultSecurityHeaders(r.URL.Path, r.TLS != nil) {
 			w.Header().Set(k, v)
 		}
 		next.ServeHTTP(w, r)
@@ -99,7 +106,11 @@ func SecurityHeadersMiddleware(next http.Handler) http.Handler {
 func MutationOriginMiddleware(allowedOrigins []string) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if err := secguard.CheckMutationOrigin(r.Method, r.Header.Get("Origin"), r.Header.Get("Referer"), allowedOrigins); err != nil {
+			if err := sgheaders.CheckMutationOrigin(r.Method, r.Header.Get("Origin"), r.Header.Get("Referer"), allowedOrigins); err != nil {
+				if errors.Is(err, sgdomain.ErrOriginNotAllowed) {
+					WriteError(w, domain.ErrOriginNotAllowed)
+					return
+				}
 				WriteError(w, err)
 				return
 			}
@@ -109,10 +120,10 @@ func MutationOriginMiddleware(allowedOrigins []string) func(http.Handler) http.H
 }
 
 // BanCheckMiddleware rejects requests from banned client IPs.
-func BanCheckMiddleware(tracker *secguard.BanTracker, behindProxy bool, trustedCIDRs []*net.IPNet) func(http.Handler) http.Handler {
+func BanCheckMiddleware(tracker *sgbantracker.BanTracker, behindProxy bool, trustedCIDRs []*net.IPNet) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			ip, err := secguard.GetRealIPFromRequest(r, behindProxy, trustedCIDRs)
+			ip, err := sgrealip.GetRealIPFromRequest(r, behindProxy, trustedCIDRs)
 			if err != nil {
 				WriteError(w, domain.ErrUnauthenticated)
 				return
@@ -137,7 +148,10 @@ func WriteError(w http.ResponseWriter, err error) {
 // StatusCodeForError maps an error to an HTTP status code and client message.
 func StatusCodeForError(err error) (int, string) {
 	switch {
-	case errors.Is(err, domain.ErrValidation):
+	case errors.Is(err, domain.ErrValidation),
+		errors.Is(err, sgdomain.ErrValidation),
+		errors.Is(err, sgdomain.ErrInvalidIP),
+		errors.Is(err, sgdomain.ErrInvalidCIDR):
 		return http.StatusBadRequest, "validation error"
 	case errors.Is(err, domain.ErrUnauthenticated),
 		errors.Is(err, domain.ErrInvalidCredential),
@@ -146,7 +160,9 @@ func StatusCodeForError(err error) (int, string) {
 		return http.StatusUnauthorized, "unauthenticated"
 	case errors.Is(err, domain.ErrForbidden),
 		errors.Is(err, domain.ErrOriginNotAllowed),
-		errors.Is(err, domain.ErrIPBanned):
+		errors.Is(err, domain.ErrIPBanned),
+		errors.Is(err, sgdomain.ErrOriginNotAllowed),
+		errors.Is(err, sgdomain.ErrIPBanned):
 		return http.StatusForbidden, "forbidden"
 	case errors.Is(err, domain.ErrNotFound),
 		errors.Is(err, domain.ErrTokenNotRecoverable):
@@ -154,7 +170,9 @@ func StatusCodeForError(err error) (int, string) {
 	case errors.Is(err, domain.ErrConflict),
 		errors.Is(err, domain.ErrTokenExists):
 		return http.StatusConflict, "conflict"
-	case errors.Is(err, domain.ErrRateLimited):
+	case errors.Is(err, domain.ErrRateLimited),
+		errors.Is(err, sgdomain.ErrRateLimited),
+		errors.Is(err, sgdomain.ErrAccountLocked):
 		return http.StatusTooManyRequests, "too many requests"
 	case errors.Is(err, domain.ErrNotLeader):
 		return http.StatusServiceUnavailable, "service unavailable"

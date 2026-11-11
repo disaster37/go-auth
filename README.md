@@ -9,7 +9,7 @@ The core packages depend only on the Go standard library plus minimal
 crypto/OIDC/JWT libraries. No HTTP framework is imported by the core; an
 optional `nethttp` adapter provides `net/http` middleware and handlers, while
 Hertz integrates in roughly twenty lines using the core, `httpcookie`, and
-`secguard` primitives.
+`github.com/disaster37/go-secguard` primitives.
 
 ## Features
 
@@ -26,10 +26,10 @@ Hertz integrates in roughly twenty lines using the core, `httpcookie`, and
   policy, `SessionMaxAge`, and leader-only refresh.
 - **Configurable API tokens** — `dct_`/`ghb_`-style prefixes, 32-byte CSPRNG
   generation, SHA-256 hashing, constant-time comparison, and at-rest encryption.
-- **Defense in depth** — exponential `LockoutLimiter`, credential-stuffing
-  `BanTracker`, sliding-window `RateLimiter`/`LoginThrottle`, trusted-proxy
-  `ExtractRealIP`, `SafeRedirectPath`, browser security headers, and CSRF
-  `CheckMutationOrigin`.
+- **Defense in depth** — exponential `lockout.Limiter`, credential-stuffing
+  `bantracker.BanTracker`, sliding-window `ratelimit.RateLimiter`/`LoginThrottle`,
+  trusted-proxy `realip.ExtractRealIP`, `SafeRedirectPath`, browser security
+  headers, and CSRF `headers.CheckMutationOrigin`.
 - **Turnkey facade** — root `goauth.Service` resolves bearer/cookie credentials,
   logs users in, rotates refresh tokens, and revokes sessions.
 
@@ -57,8 +57,11 @@ flowchart TD
     O --> CR[crypto]
     A --> CR
     O --> HC[httpcookie]
-    O --> SG[secguard]
     CORE --> OB[observ]
+    subgraph External
+        SG[go-secguard]
+    end
+    O --> SG
 ```
 
 ## Package map
@@ -73,12 +76,15 @@ flowchart TD
 | `apitoken` | Configurable-prefix API token lifecycle. |
 | `oauth` | OIDC/GitHub providers, PKCE, group mapping, credential sealing, revalidation. |
 | `httpcookie` | Framework-agnostic cookie specs and open-redirect defense. |
-| `secguard` | Lockout, rate limiting, ban tracking, real IP, headers, CSRF. |
 | `observ` | Structured logger interface and adapters. |
 | `config` | Configuration structs, defaults, and strict validation. |
 | `nethttp` | Optional `net/http` middleware and handlers. |
 | `testutil` | Fake clock and in-process mock OIDC server. |
 | `goauth` (root) | Turnkey `Service` facade and re-exported domain types. |
+
+External dependencies: `github.com/disaster37/go-secguard` provides lockout,
+rate limiting, ban tracking, real IP resolution, security headers, and CSRF
+origin validation.
 
 ## Quickstart — `net/http`
 

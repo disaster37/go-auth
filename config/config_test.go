@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	sgdomain "github.com/disaster37/go-secguard/domain"
+
 	"github.com/disaster37/go-auth/domain"
 	"github.com/disaster37/go-auth/oauth"
 )
@@ -106,13 +108,90 @@ func TestValidateOAuth(t *testing.T) {
 
 func TestValidateSecurityAndBootstrap(t *testing.T) {
 	cfg := DefaultConfig()
-	cfg.Security.TrustedProxyCIDRs = []string{"not-a-cidr"}
-	if err := cfg.Validate(); err == nil {
-		t.Fatal("invalid CIDR must error")
+	cfg.Security.TrustedProxyCIDRs = []string{"not-a-cidr/24"}
+	err := cfg.Validate()
+	if !errors.Is(err, domain.ErrValidation) {
+		t.Fatalf("invalid CIDR must wrap domain.ErrValidation: %v", err)
 	}
+	if !errors.Is(err, sgdomain.ErrInvalidCIDR) {
+		t.Fatalf("invalid CIDR must wrap sgdomain.ErrInvalidCIDR: %v", err)
+	}
+
+	cfg = DefaultConfig()
+	cfg.Security.TrustedProxyCIDRs = []string{"not-an-ip"}
+	err = cfg.Validate()
+	if !errors.Is(err, domain.ErrValidation) {
+		t.Fatalf("invalid IP must wrap domain.ErrValidation: %v", err)
+	}
+	if !errors.Is(err, sgdomain.ErrInvalidIP) {
+		t.Fatalf("invalid IP must wrap sgdomain.ErrInvalidIP: %v", err)
+	}
+
 	cfg = DefaultConfig()
 	cfg.BootstrapAdmin.Password = "short"
 	if err := cfg.Validate(); !errors.Is(err, domain.ErrValidation) {
 		t.Fatalf("short bootstrap password: %v", err)
+	}
+}
+
+func TestToSecguardConfig(t *testing.T) {
+	cfg := DefaultConfig()
+	cfg.CORS.AllowedOrigins = []string{"https://app.example.com"}
+
+	got := cfg.ToSecguardConfig()
+
+	if !got.Lockout.Enabled || !got.RateLimit.Enabled || !got.Ban.Enabled {
+		t.Fatal("all components must be enabled")
+	}
+	if got.Lockout.MaxFailedAttempts != cfg.Security.MaxFailedAttempts {
+		t.Fatalf("lockout max failed attempts=%d", got.Lockout.MaxFailedAttempts)
+	}
+	if got.Lockout.BaseLockout != cfg.Security.BaseLockout {
+		t.Fatalf("lockout base=%v", got.Lockout.BaseLockout)
+	}
+	if got.Lockout.MaxLockout != cfg.Security.MaxLockout {
+		t.Fatalf("lockout max=%v", got.Lockout.MaxLockout)
+	}
+	if got.Lockout.EntryTTL != cfg.Security.EntryTTL {
+		t.Fatalf("lockout entry ttl=%v", got.Lockout.EntryTTL)
+	}
+	if got.Lockout.MaxEntries != cfg.Security.MaxEntries {
+		t.Fatalf("lockout max entries=%d", got.Lockout.MaxEntries)
+	}
+	if got.RateLimit.MaxRequests != cfg.Security.RateLimitMax {
+		t.Fatalf("rate limit max=%d", got.RateLimit.MaxRequests)
+	}
+	if got.RateLimit.Window != cfg.Security.RateLimitWindow {
+		t.Fatalf("rate limit window=%v", got.RateLimit.Window)
+	}
+	if got.RateLimit.LoginThrottleAttempts != cfg.Security.LoginThrottleAttempts {
+		t.Fatalf("login throttle attempts=%d", got.RateLimit.LoginThrottleAttempts)
+	}
+	if got.RateLimit.LoginThrottleWindow != cfg.Security.LoginThrottleWindow {
+		t.Fatalf("login throttle window=%v", got.RateLimit.LoginThrottleWindow)
+	}
+	if got.RateLimit.MaxEntries != cfg.Security.MaxEntries {
+		t.Fatalf("rate limit max entries=%d", got.RateLimit.MaxEntries)
+	}
+	if got.Ban.MaxUniqueFailures != cfg.Security.BanMaxUniqueFailures {
+		t.Fatalf("ban max unique failures=%d", got.Ban.MaxUniqueFailures)
+	}
+	if got.Ban.BanDuration != cfg.Security.BanDuration {
+		t.Fatalf("ban duration=%v", got.Ban.BanDuration)
+	}
+	if got.Ban.Window != cfg.Security.BanWindow {
+		t.Fatalf("ban window=%v", got.Ban.Window)
+	}
+	if got.Ban.MaxEntries != cfg.Security.MaxEntries {
+		t.Fatalf("ban max entries=%d", got.Ban.MaxEntries)
+	}
+	if got.Proxy.BehindReverseProxy != cfg.Security.BehindReverseProxy {
+		t.Fatalf("behind reverse proxy=%v", got.Proxy.BehindReverseProxy)
+	}
+	if len(got.Proxy.TrustedProxyCIDRs) != len(cfg.Security.TrustedProxyCIDRs) {
+		t.Fatalf("trusted proxy cidrs=%v", got.Proxy.TrustedProxyCIDRs)
+	}
+	if len(got.CORS.AllowedOrigins) != 1 || got.CORS.AllowedOrigins[0] != cfg.CORS.AllowedOrigins[0] {
+		t.Fatalf("cors allowed origins=%v", got.CORS.AllowedOrigins)
 	}
 }
