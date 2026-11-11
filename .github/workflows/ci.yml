@@ -1,0 +1,31 @@
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  dagger:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Dagger
+        run: |
+          curl -fsSL https://dl.dagger.io/dagger/install.sh | DAGGER_VERSION=0.21.10 sh
+          sudo mv bin/dagger /usr/local/bin/dagger
+      - name: Run CI pipeline
+        run: dagger call -m ./dagger --src . ci export --path out
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: out/coverage.out
+      - name: Upload API docs
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-docs
+          path: out/docs/api.md
